@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Mathematics Practice</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body { background: #eaf0f5; color: #182b3a; font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    main { max-width: 1150px; margin: 5vh auto 0; padding: 0 20px 32px; }
+    h1 { font-size: clamp(20px, 3vw, 30px); line-height: 1.2; margin: 0 0 16px; }
+    #stage { width: 100%; max-width: 1100px; aspect-ratio: 2 / 1; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px #18364b22; }
+    ruffle-player { width: 100%; height: 100%; display: block; }
+    #status { margin: 1em auto; max-width: 1100px; text-align: center; color: #40586a; }
+    .blocked { padding: 14% 20px; text-align: center; font-size: 18px; color: #8c2d24; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mathematics Practice</h1>
+    <div id="stage"><div id="status-stage" class="blocked" style="color:#40586a">Loading player…</div></div>
+    <p id="status" role="status">Checking website access…</p>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const approvedHosts = new Set([
+        'ma7thlza7ni5ma5ti7o2n.github.io',
+        'ma7th1za7ni5ma5ti7o2n.github.io'
+      ]);
+      const host = window.location.hostname.toLowerCase();
+      const status = document.getElementById('status');
+      const stage = document.getElementById('stage');
+      const deny = (message) => {
+        status.textContent = 'Access denied.';
+        stage.innerHTML = '';
+        const warning = document.createElement('p');
+        warning.className = 'blocked';
+        warning.textContent = message;
+        stage.appendChild(warning);
+      };
+      if (location.protocol !== 'https:' || !approvedHosts.has(host)) {
+        deny('This activity is available only on its two approved GitHub Pages websites.');
+        return;
+      }
+      // Prevent cross-origin framing (also permits same-origin frames).
+      try {
+        if (window.top !== window && window.top.location.origin !== window.location.origin) {
+          deny('External embedding is not permitted.');
+          return;
+        }
+      } catch (_) {
+        deny('External embedding is not permitted.');
+        return;
+      }
+      const loader = document.createElement('script');
+      loader.src = 'https://unpkg.com/@ruffle-rs/ruffle';
+      loader.async = true;
+      loader.onload = () => {
+        try {
+          const ruffle = window.RufflePlayer && window.RufflePlayer.newest();
+          if (!ruffle) throw new Error('Ruffle could not initialize.');
+          const player = ruffle.createPlayer();
+          stage.replaceChildren(player);
+          status.textContent = ' '; // SWF remains responsible for its own runtime check.
+          Promise.resolve(player.load({
+            url: './math_quiz_domain_locked.swf',
+            allowScriptAccess: false
+          })).catch(() => {
+            status.textContent = 'The SWF could not be loaded. Check the file location and player compatibility.';
+          });
+        } catch (_) {
+          status.textContent = 'Unable to start the SWF player.';
+        }
+      };
+      loader.onerror = () => { status.textContent = 'Unable to download Ruffle. Check your internet connection.'; };
+      document.head.appendChild(loader);
+    })();
+  </script>
+</body>
+</html>
